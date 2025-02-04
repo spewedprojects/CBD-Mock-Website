@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import Solutions from './components/Solutions';
 import CaseStudies from './components/CaseStudies';
+import Comparison from './components/Comparison';
 import Pricing from './components/Pricing';
 import PriceCalculator from './components/PriceCalculator';
 import Contact from './components/Contact';
@@ -16,6 +17,7 @@ function App() {
         <Hero />
         <Solutions />
         <CaseStudies />
+        <Comparison />
         <Pricing />
         <PriceCalculator />
         <Contact />

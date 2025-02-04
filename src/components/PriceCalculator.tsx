@@ -6,32 +6,42 @@ import { Pie, Bar } from 'react-chartjs-2';
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface ResourceConfig {
-  cpu: number;
-  gpu: number;
-  ram: number;
-  ssdStorage: number;
-  hddStorage: number;
+  compute: {
+    cpuCores: number;
+    gpuType: 'none' | 'v100' | 'a100';
+    ram: number;
+  };
+  storage: {
+    ssd: number;
+    hdd: number;
+  };
   services: {
-    ai: boolean;
-    database: boolean;
-    loadBalancer: boolean;
+    mlOps: boolean;
+    dataProcessing: boolean;
+    monitoring: boolean;
     security: boolean;
   };
+  support: 'basic' | 'business' | 'enterprise';
 }
 
 const PriceCalculator = () => {
   const [config, setConfig] = useState<ResourceConfig>({
-    cpu: 4,
-    gpu: 12,
-    ram: 4,
-    ssdStorage: 100,
-    hddStorage: 500,
+    compute: {
+      cpuCores: 8,
+      gpuType: 'none',
+      ram: 32,
+    },
+    storage: {
+      ssd: 500,
+      hdd: 2000,
+    },
     services: {
-      ai: false,
-      database: false,
-      loadBalancer: false,
+      mlOps: false,
+      dataProcessing: false,
+      monitoring: false,
       security: false,
     },
+    support: 'basic',
   });
 
   const [totalCost, setTotalCost] = useState(0);
@@ -39,53 +49,83 @@ const PriceCalculator = () => {
     compute: 0,
     storage: 0,
     services: 0,
+    support: 0,
   });
 
-  // Pricing constants
+  // Realistic pricing constants based on enterprise cloud providers
   const PRICING = {
-    cpu: 10, // per core
-    gpu: 40, // per core
-    ram: 10, // per GB
-    ssdStorage: 0.1, // per GB
-    hddStorage: 0.05, // per GB
+    compute: {
+      cpu: 40, // per core per month
+      gpu: {
+        none: 0,
+        v100: 2500, // per GPU per month
+        a100: 4000, // per GPU per month
+      },
+      ram: 6.5, // per GB per month
+    },
+    storage: {
+      ssd: 0.15, // per GB per month
+      hdd: 0.05, // per GB per month
+    },
     services: {
-      ai: 599,
-      database: 399,
-      loadBalancer: 199,
-      security: 649,
+      mlOps: 2000, // MLOps platform per month
+      dataProcessing: 1500, // Data processing pipeline per month
+      monitoring: 800, // Advanced monitoring per month
+      security: 1200, // Enhanced security features per month
+    },
+    support: {
+      basic: 0,
+      business: 1000,
+      enterprise: 5000,
     },
   };
 
   useEffect(() => {
-    // Calculate costs
-    const computeCost = (config.cpu * PRICING.cpu) + (config.gpu * PRICING.gpu) + (config.ram * PRICING.ram);
-    const storageCost = (config.ssdStorage * PRICING.ssdStorage) + (config.hddStorage * PRICING.hddStorage);
+    // Calculate compute costs
+    const computeCost = 
+      (config.compute.cpuCores * PRICING.compute.cpu) +
+      PRICING.compute.gpu[config.compute.gpuType] +
+      (config.compute.ram * PRICING.compute.ram);
+
+    // Calculate storage costs
+    const storageCost = 
+      (config.storage.ssd * PRICING.storage.ssd) +
+      (config.storage.hdd * PRICING.storage.hdd);
+
+    // Calculate service costs
     const servicesCost = Object.entries(config.services)
-      .reduce((acc, [key, enabled]) => enabled ? acc + PRICING.services[key as keyof typeof PRICING.services] : acc, 0);
+      .reduce((acc, [key, enabled]) => 
+        enabled ? acc + PRICING.services[key as keyof typeof PRICING.services] : acc, 0);
+
+    // Support cost
+    const supportCost = PRICING.support[config.support];
 
     setCosts({
       compute: computeCost,
       storage: storageCost,
       services: servicesCost,
+      support: supportCost,
     });
 
-    setTotalCost(computeCost + storageCost + servicesCost);
+    setTotalCost(computeCost + storageCost + servicesCost + supportCost);
   }, [config]);
 
   const chartData = {
-    labels: ['Compute', 'Storage', 'Services'],
+    labels: ['Compute', 'Storage', 'Services', 'Support'],
     datasets: [
       {
-        data: [costs.compute, costs.storage, costs.services],
+        data: [costs.compute, costs.storage, costs.services, costs.support],
         backgroundColor: [
           'rgba(54, 162, 235, 0.8)',
           'rgba(75, 192, 192, 0.8)',
           'rgba(153, 102, 255, 0.8)',
+          'rgba(255, 159, 64, 0.8)',
         ],
         borderColor: [
           'rgba(54, 162, 235, 1)',
           'rgba(75, 192, 192, 1)',
           'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)',
         ],
         borderWidth: 1,
       },
@@ -110,6 +150,11 @@ const PriceCalculator = () => {
         data: [costs.services],
         backgroundColor: 'rgba(153, 102, 255, 0.8)',
       },
+      {
+        label: 'Support',
+        data: [costs.support],
+        backgroundColor: 'rgba(255, 159, 64, 0.8)',
+      },
     ],
   };
 
@@ -131,10 +176,10 @@ const PriceCalculator = () => {
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-4">
             <Calculator size={32} className="text-blue-600 mr-2" />
-            <h2 className="text-4xl font-bold">Price Calculator</h2>
+            <h2 className="text-4xl font-bold">Enterprise Solution Calculator</h2>
           </div>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Estimate your monthly costs based on your resource requirements and additional services.
+            Estimate your monthly costs based on your enterprise requirements and scale.
           </p>
         </div>
 
@@ -148,41 +193,60 @@ const PriceCalculator = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    CPU Cores ({config.cpu} cores)
+                    CPU Cores ({config.compute.cpuCores} cores)
                   </label>
                   <input
                     type="range"
                     min="4"
-                    max="64"
-                    value={config.cpu}
-                    onChange={(e) => setConfig({ ...config, cpu: parseInt(e.target.value) })}
+                    max="96"
+                    value={config.compute.cpuCores}
+                    onChange={(e) => setConfig({
+                      ...config,
+                      compute: {
+                        ...config.compute,
+                        cpuCores: parseInt(e.target.value),
+                      },
+                    })}
                     className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    GPU Cores ({config.gpu} cores)
+                    GPU Configuration
                   </label>
-                  <input
-                    type="range"
-                    min="12"
-                    max="496"
-                    value={config.gpu}
-                    onChange={(e) => setConfig({ ...config, gpu: parseInt(e.target.value) })}
-                    className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
-                  />
+                  <select
+                    value={config.compute.gpuType}
+                    onChange={(e) => setConfig({
+                      ...config,
+                      compute: {
+                        ...config.compute,
+                        gpuType: e.target.value as 'none' | 'v100' | 'a100',
+                      },
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="none">No GPU</option>
+                    <option value="v100">NVIDIA V100</option>
+                    <option value="a100">NVIDIA A100</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    RAM ({config.ram} GB)
+                    RAM ({config.compute.ram} GB)
                   </label>
                   <input
                     type="range"
-                    min="2"
-                    max="128"
-                    step="2"
-                    value={config.ram}
-                    onChange={(e) => setConfig({ ...config, ram: parseInt(e.target.value) })}
+                    min="16"
+                    max="512"
+                    step="16"
+                    value={config.compute.ram}
+                    onChange={(e) => setConfig({
+                      ...config,
+                      compute: {
+                        ...config.compute,
+                        ram: parseInt(e.target.value),
+                      },
+                    })}
                     className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
@@ -195,38 +259,50 @@ const PriceCalculator = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    SSD Storage ({config.ssdStorage} GB)
+                    SSD Storage ({config.storage.ssd} GB)
                   </label>
                   <input
                     type="range"
-                    min="0"
+                    min="100"
                     max="10000"
-                    step="50"
-                    value={config.ssdStorage}
-                    onChange={(e) => setConfig({ ...config, ssdStorage: parseInt(e.target.value) })}
+                    step="100"
+                    value={config.storage.ssd}
+                    onChange={(e) => setConfig({
+                      ...config,
+                      storage: {
+                        ...config.storage,
+                        ssd: parseInt(e.target.value),
+                      },
+                    })}
                     className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    HDD Storage ({config.hddStorage} GB)
+                    HDD Storage ({config.storage.hdd} GB)
                   </label>
                   <input
                     type="range"
-                    min="0"
-                    max="20000"
-                    step="100"
-                    value={config.hddStorage}
-                    onChange={(e) => setConfig({ ...config, hddStorage: parseInt(e.target.value) })}
+                    min="1000"
+                    max="50000"
+                    step="1000"
+                    value={config.storage.hdd}
+                    onChange={(e) => setConfig({
+                      ...config,
+                      storage: {
+                        ...config.storage,
+                        hdd: parseInt(e.target.value),
+                      },
+                    })}
                     className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Additional Services */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Additional Services</h4>
+            {/* Enterprise Services */}
+            <div className="mb-8">
+              <h4 className="text-lg font-semibold mb-4">Enterprise Services</h4>
               <div className="space-y-3">
                 {Object.entries(config.services).map(([service, enabled]) => (
                   <div key={service} className="flex items-center">
@@ -244,14 +320,34 @@ const PriceCalculator = () => {
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <label htmlFor={service} className="ml-2 block text-sm text-gray-900">
-                      {service.charAt(0).toUpperCase() + service.slice(1)} Service
+                      {service === 'mlOps' ? 'MLOps Platform' :
+                        service === 'dataProcessing' ? 'Data Processing Pipeline' :
+                        service === 'monitoring' ? 'Advanced Monitoring' :
+                        'Enhanced Security'}
                       <span className="text-gray-500 ml-2">
-                        (${PRICING.services[service as keyof typeof PRICING.services]}/mo)
+                        (${PRICING.services[service as keyof typeof PRICING.services].toLocaleString()}/mo)
                       </span>
                     </label>
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Support Level */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Support Level</h4>
+              <select
+                value={config.support}
+                onChange={(e) => setConfig({
+                  ...config,
+                  support: e.target.value as 'basic' | 'business' | 'enterprise',
+                })}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="basic">Basic Support (Included)</option>
+                <option value="business">Business Support (${PRICING.support.business.toLocaleString()}/mo)</option>
+                <option value="enterprise">Enterprise Support (${PRICING.support.enterprise.toLocaleString()}/mo)</option>
+              </select>
             </div>
           </div>
 
@@ -262,20 +358,24 @@ const PriceCalculator = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Compute Costs:</span>
-                  <span className="font-semibold">${costs.compute.toFixed(2)}/mo</span>
+                  <span className="font-semibold">${costs.compute.toLocaleString()}/mo</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Storage Costs:</span>
-                  <span className="font-semibold">${costs.storage.toFixed(2)}/mo</span>
+                  <span className="font-semibold">${costs.storage.toLocaleString()}/mo</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Service Costs:</span>
-                  <span className="font-semibold">${costs.services.toFixed(2)}/mo</span>
+                  <span className="font-semibold">${costs.services.toLocaleString()}/mo</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Support Costs:</span>
+                  <span className="font-semibold">${costs.support.toLocaleString()}/mo</span>
                 </div>
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total Estimated Cost:</span>
-                    <span className="text-blue-600">${totalCost.toFixed(2)}/mo</span>
+                    <span className="text-blue-600">${totalCost.toLocaleString()}/mo</span>
                   </div>
                 </div>
               </div>

@@ -8,9 +8,9 @@ const Header = () => {
   const menuItems = [
     { label: 'Solutions', href: '#solutions' },
     { label: 'Case Studies', href: '#case-studies' },
+    { label: 'Compare', href: '#comparison' },
     { label: 'Pricing', href: '#pricing' },
     { label: 'Calculator', href: '#calculator' },
-    { label: 'Security', href: '#security' },
     { label: 'Contact', href: '#contact' },
   ];
 
