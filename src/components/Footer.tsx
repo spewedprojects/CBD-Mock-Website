@@ -21,7 +21,11 @@ const Footer = () => {
               <a href="#" className="hover:text-white transition-colors">
                 <Linkedin size={24} />
               </a>
-              <a href="#" className="hover:text-white transition-colors">
+              <a
+                href="https://github.com/spewedprojects/CBD-Mock-Website"
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors">
                 <Github size={24} />
               </a>
             </div>
