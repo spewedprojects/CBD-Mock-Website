@@ -10,26 +10,26 @@ const Hero = () => {
             Transform Your Business with AI-Driven Cloud Innovation
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Harness the power of enterprise-grade AI and machine learning solutions to drive efficiency,
-            reduce costs, and accelerate growth.
+            Partner with CloudAI to accelerate digital transformation, reduce operational costs by 40%, 
+            and achieve regulatory compliance while maintaining enterprise-grade security.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 w-full sm:w-auto">
-              Schedule a Free Consultation
+              Schedule a Strategic Consultation
               <ArrowRight size={20} />
             </button>
             <button className="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors w-full sm:w-auto">
-              View Case Studies
+              View Enterprise Success Stories
             </button>
           </div>
         </div>
 
-        {/* Stats Bar */}
+        {/* Stats Bar - Updated with more CIO-relevant metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
           {[
-            { metric: '40%', label: 'Faster Deployment' },
-            { metric: '$1M+', label: 'Annual Cost Savings' },
-            { metric: '99.99%', label: 'Uptime SLA' },
+            { metric: '40%', label: 'Average Cost Reduction' },
+            { metric: '60%', label: 'Faster Time-to-Market' },
+            { metric: '99.99%', label: 'Enterprise SLA Uptime' },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="text-4xl font-bold text-blue-600 mb-2">{stat.metric}</div>

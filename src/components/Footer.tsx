@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Github, Linkedin, Twitter } from 'lucide-react';
+import AboutUs from './AboutUs';
 
 const Footer = () => {
+  const [showAbout, setShowAbout] = useState(false);
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container mx-auto px-6 py-12">
@@ -37,7 +40,14 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Company</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
+              <li>
+                <button 
+                  onClick={() => setShowAbout(true)} 
+                  className="hover:text-white transition-colors"
+                >
+                  About Us
+                </button>
+              </li>
               <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
@@ -59,6 +69,8 @@ const Footer = () => {
           <p>&copy; {new Date().getFullYear()} CloudAI. All rights reserved.</p>
         </div>
       </div>
+
+      {showAbout && <AboutUs onClose={() => setShowAbout(false)} />}
     </footer>
   );
 };
